@@ -38,7 +38,7 @@ def adjust_gamma(image, gamma=1):
     # their adjusted gamma values
     invGamma = 1.0 / gamma
     table = np.array([((i / 255.0) ** invGamma) * 255
-        for i in np.arange(0, 256)]).astype("uint8")
+                      for i in np.arange(0, 256)]).astype("uint8")
     # apply gamma correction using the lookup table
     return cv2.LUT(image, table)
 
@@ -154,13 +154,13 @@ def reconstruct_laplacian_pyramid(pyr):
 
         # C = np.zeros([odd[0]*2, odd[1]*2, odd[2]])
         # for j in range(odd[2]):
-            # print('R', R.shape)
-            # print('C', C.shape)
-            # print('pyr', pyr[i][:,:,j].shape)
+        # print('R', R.shape)
+        # print('C', C.shape)
+        # print('pyr', pyr[i][:,:,j].shape)
         # upsample(R[:,:,j])#
         C = pyr[i] + cv2.resize(R, (pyr[i].shape[1], pyr[i].shape[0]))
-            # C[:,:,j] = pyr[i][:,:,j]  + cv2.resize(R,(pyr[i].shape[1],
-            # pyr[i].shape[0]))#upsample(R[:,:,j])#
+        # C[:,:,j] = pyr[i][:,:,j]  + cv2.resize(R,(pyr[i].shape[1],
+        # pyr[i].shape[0]))#upsample(R[:,:,j])#
         R = C
     return R
 
@@ -255,78 +255,41 @@ class HDRdatasets_dynamic_compose(data.Dataset):
         gt_img_train = []
         img = []
         if train:
-            for i in os.listdir(r'C:\Users\admin\Downloads\random_select'):
-                img_list = glob.glob(
-                    r'C:\Users\admin\Downloads\random_select' + '\\' + i + r'\*.JPG')
-                # print(img_list)
-#                 img_list1 = glob.glob('.\matlab_compose'+'\\'+i+r'\*.png')
+            for i in os.listdir('random_select'):
+                img_list = glob.glob(os.path.join('random_select', '\\', i, r'\*.JPG'))
+
                 for j in img_list:
                     # print(j)
                     if 'GT.JPG' in j:
                         gt_img_train.append(j)
                     else:
                         img.append(j)
-
-#                 for j in img_list1:
-#                     if 'com.png' in j:
-#                         out_img_train.append(j)
-#                     else:
-#                         img.append(j)
 
         else:
             for i in os.listdir(r'C:\Users\admin\Downloads\random_select2'):
-                img_list = glob.glob(
-                    r'C:\Users\admin\Downloads\random_select2' + '\\' + i + r'\*.JPG')
-                img_list1 = glob.glob(
-                    r'C:\Users\admin\Downloads\random_select2' + '\\' + i + r'\*.png')
+                img_list = glob.glob(os.path.join('random_select2', '\\', i, r'\*.JPG'))
+                img_list1 = glob.glob(os.path.join('random_select2', '\\', i, r'\*.png'))
                 for j in img_list:
                     # print(j)
                     if 'GT.JPG' in j:
                         gt_img_train.append(j)
                     else:
                         img.append(j)
-#                 gt_img_train.append([])
-#                 img.append([])
-#                 for k in img_list1:
-# #                     print(k)
-#                     if 'com.png' in k:
-#                         out_img_train.append(k)
-#                     else:
-#                         img.append(k)
-        # # A
-        # out_img_train = [lab for lab in img_list if 'GT.JPG' not in lab]
-        # # B
-        # gt_img_train = [lab for lab in img_list if 'com.JPG' in lab]
-        # print(len(os.listdir(r'C:\Users\admin\Downloads\matlab_compose2')))
-# #         print(img_list1)
-#         print(len(img))
-# #         print(len(out_img_train))
-#         print(len(gt_img_train))
-        # print((out_img_train[455:]))
-        # print((gt_img_train[455:]))
-        # print((img[455:]))
-        # gt_img_train
 
         self.train = train
         self.gt_img_train = gt_img_train
         self.out_img_train = out_img_train
         self.img = img
         self.transforms = transforms
-        # self.transforms_pyramid112 = T.Compose([T.Resize([112, 112]),T.ToTensor()])
-        # self.transforms_pyramid61 = T.Compose([T.Resize([56,
-        # 56]),T.ToTensor()])
 
     def __getitem__(self, index):
-#         print(index)
-#         print(self.out_img_train[index])
+
         augmentation = False
         filename = self.img[2 * index]
         label_path = self.gt_img_train[index]
 #         out_path = self.out_img_train[index]
         img1_path = self.img[2 * index]
         img2_path = self.img[2 * index + 1]
-
-        # print(label_path,self.out_img_train[index])
 
         label = Image.open(label_path).convert('YCbCr')
         # print(img1_path)
@@ -340,58 +303,20 @@ class HDRdatasets_dynamic_compose(data.Dataset):
         if augmentation:
             img1_np = adjust_gamma(img1_np, gamma=random.uniform(0.5, 4))
             img2_np = adjust_gamma(img2_np, gamma=random.uniform(0.5, 4))
-            # print("=>>>>>>>>>>>>>>>>>>>>>>>>>>>data augmentation on")
-        # out_np = two_fusion(img1_np,img2_np)
-        # raw_fused = np.uint8(np.clip(cfusion(raw0_new, raw1_new) * 255, 0,
-        # 255))
+
         raw_fused = np.uint8(np.clip(cfusion(img1_np, img2_np) * 255, 0, 255))
-        # if self.train==False:
-        # imsave(".\\Result_check2\\%06s_compose.png" %
-        #        (filename.split('\\')[-2]), img_as_ubyte(raw_fused))
+
         raw_fused_cbcr = rgb2ycbcr(raw_fused)[:, :, 0:3]
-        # detail, luma = fusion(raw_fused, multi=True)
-
-#         print(out_np)
-#         print(out_np.shape)
-#         print(img1_np.shape)
-#         print(img2_np.shape)
-#         print(out_np.shape)
-#         print(out_np)
-
-            # np.uint8 error in Image.fromarray
-#         out = Image.fromarray(out_np.astype(np.uint8))
-        # out = Image.fromarray(rgb2ycbcr(np.clip(out_np,0,255)).astype(np.uint8))
-        # out = Image.fromarray(rgb2ycbcr(np.clip(out_np,0,255)).astype(np.uint8))
-        # image = Image.fromarray((np.clip(out_np,0,255)).astype(np.uint8))
 
         image = Image.fromarray(raw_fused_cbcr.astype(np.uint8))
-        # image = Image.fromarray(raw_fused_cbcr.astype(np.uint8))
 
-        # ycbcr = image.convert('YCbCr')
-        # B = np.ndarray((image.size[1], image.size[0], 3), 'u1', ycbcr.tobytes())
-        # out = Image.fromarray(B[:,:,0], "L")
         out = image
-        # out_ycbcr = rgb2ycbcr(out)
-        # label_ycbcr = rgb2ycbcr(label)
-#         out = Image.fromarray(out_np.astype(np.uint8))
-#         print(out)
-#         out = Image.open(out_path)
-
-#         groundtruth256 = cv2.pyrDown(np.array(label))
-#         print(groundtruth256.shape)
-#         groundtruth128 = cv2.pyrDown(groundtruth256)
-#         print(groundtruth128.shape)
-#         groundtruth256 = Image.fromargit: commitray(groundtruth256)
-#         groundtruth128 = Image.fromarray(groundtruth128)
-        # filename = self.out_img_train[index][-16:]
 
         if self.transforms:
             img1 = self.transforms(img1_ycbcr)
             img2 = self.transforms(img2_ycbcr)
             out = self.transforms(out)
             label = self.transforms(label)
-#             groundtruth256 = self.transforms_pyramid112(groundtruth256)
-#             groundtruth128 = self.transforms_pyramid61(groundtruth128)
         return img1, img2, out, label, filename
 
     def __len__(self):
@@ -399,70 +324,16 @@ class HDRdatasets_dynamic_compose(data.Dataset):
         return len(self.gt_img_train)
 
 
-class HDRDataset(Dataset):
-
-    def __init__(self, root):
-        super().__init__()
-        self.folder = root
-        self.indexes = open(root + '\annotations.txt').read().splitlines()
-
-    def __getitem__(self, index):
-        ldr_image, hdr_image = self.indexes[index].split('\t')
-        ldr_image = cv2.imread(ldr_image)
-        ldr_image = cv2.cvtColor(ldr_image, cv2.COLOR_BGR2RGB)
-        ldr_image = ldr_image / 255
-
-        hdr_image = cv2.imread(hdr_image, cv2.IMREAD_ANYDEPTH)
-        hdr_image = cv2.cvtColor(hdr_image, cv2.COLOR_BGR2RGB)
-
-        return ldr_image.transpose(2, 0, 1), hdr_image.transpose(2, 0, 1)
-
-    def __len__(self):
-        return len(self.indexes)
-
-
 def get_loader(root, batch_size, shuffle=True):
-    # dataset = HDRDataset(root=root)
 
-    # num_train = int(len(dataset) * 0.8)
-    # num_val = len(dataset) - num_train
-    # train_dataset, val_dataset = random_split(dataset, [num_train, num_val])
+    transforms = T.Compose([T.Resize([512, 512]), T.ToTensor(
+    ), T.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
-    # train_loader = DataLoader(dataset=train_dataset,
-    #                           batch_size=batch_size,
-    #                           shuffle=shuffle,
-    #                           drop_last=True)
+    train_dataset = HDRdatasets_dynamic_compose(True, transforms)
+    test_dataset = HDRdatasets_dynamic_compose(False, transforms)
 
-    # val_loader = DataLoader(dataset=val_dataset,
-    #                         batch_size=batch_size,
-    #                         shuffle=shuffle,
-    #                         drop_last=True)
-    transforms = T.Compose([T.Resize([512, 512]), T.ToTensor(), T.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)) ])
-    # transforms = T.Compose([T.Resize([224, 224]), T.ToTensor(), torch.tensor([0.5, 0.5, 0.5]) ])
-    # transforms = T.Compose([T.Resize([224, 224]),T.ToTensor(),
-    # T.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-
-    train_dataset=HDRdatasets_dynamic_compose(True, transforms)
-    test_dataset=HDRdatasets_dynamic_compose(False, transforms)
-    train_dataloader=data.DataLoader(
+    train_dataloader = data.DataLoader(
         train_dataset, batch_size=batch_size, shuffle=True, num_workers=0, pin_memory=True)
-    test_dataloader=data.DataLoader(
+    test_dataloader = data.DataLoader(
         test_dataset, batch_size=1, shuffle=False, num_workers=0, pin_memory=True)
     return train_dataloader, test_dataloader
-
-
-    # return train_loader, val_loader
-
-# if __name__ == '__main__':
-
-#     transforms=T.Compose([T.Resize([512, 512]), T.ToTensor()])
-
-# # #     test_mean, test_std = torch.tensor([0.5 ,0.5 ,0.5]), torch.tensor([0.5 ,0.5, 0.5])
-#     train_dataset=HDRdatasets_dynamic_compose(False, transforms)
-#     train_dataloader=data.DataLoader(
-#         train_dataset, batch_size=1, shuffle=False, num_workers=0, pin_memory=True)
-# #     # for folder in train_dataloader:
-#     for img1, img2, out, label, filename in train_dataloader:
-#         print(filename[0].split('\\')[-2])
-#         print(filename[0].replace('.JPG','').split('\\')[-1].split('\\')[0])
-#         break
